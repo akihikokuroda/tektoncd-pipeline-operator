@@ -17,10 +17,15 @@ spec:
       containers:
         - name: openshift-pipelines-operator
           # Replace this with the built image name
-          image: quay.io/openshift-pipeline/openshift-pipelines-operator:v0.3.1-1
+          #image: quay.io/openshift-pipeline/openshift-pipelines-operator:v0.3.1-1
+          image: akihikokuroda/openshift-pipelines-operator:v17
           command:
           - openshift-pipelines-operator
           imagePullPolicy: Always
+          volumeMounts:
+          - name: webhook
+            mountPath: /deploy/resources/aaa/webhook.yaml
+            subPath: webhook.yaml
           env:
             - name: WATCH_NAMESPACE
               valueFrom:
@@ -32,3 +37,11 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "openshift-pipelines-operator"
+      volumes:
+      - name: webhook
+        configMap:
+          name: tekton-pipelines-webhook
+          items:
+          - key: webhook.yaml
+            path: webhook.yaml
+            mode: 0777

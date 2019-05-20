@@ -17,7 +17,8 @@ spec:
       containers:
         - name: openshift-pipelines-operator
           # Replace this with the built image name
-          image: quay.io/openshift-pipeline/openshift-pipelines-operator:v0.3.1-1
+          #image: quay.io/openshift-pipeline/openshift-pipelines-operator:v0.3.1-1
+          image: akihikokuroda/openshift-pipelines-operator:v17
           command:
           - openshift-pipelines-operator
           imagePullPolicy: Always
@@ -32,3 +33,25 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: "openshift-pipelines-operator"
+          volumeMounts:
+          - name: webhooks
+            mountPath: /deploy/resources/webhooks/webhooks.yaml
+            subPath: webhooks.yaml
+          - name: webhooks-sink
+            mountPath: /deploy/resources/webhooks-sink/webhooks-sink.yaml
+            subPath: webhooks-sink.yaml
+      volumes:
+      - name: webhooks
+        configMap:
+          name: webhooks
+          items:
+          - key: webhooks.yaml
+            path: webhooks.yaml
+            mode: 0777
+      - name: webhooks-sink
+        configMap:
+          name: webhooks-sink
+          items:
+          - key: webhooks-sink.yaml
+            path: webhooks-sink.yaml
+            mode: 0777

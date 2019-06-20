@@ -1,0 +1,12 @@
+          volumeMounts:
+          - name: dashboard
+            mountPath: /deploy/resources/dashboard/dashboard.yaml
+            subPath: dashboard.yaml
+      volumes:
+      - name: dashboard
+        configMap:
+          name: dashboard
+          items:
+          - key: dashboard.yaml
+            path: dashboard.yaml
+            mode: 0777

@@ -1,0 +1,184 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dashboard
+  namespace: openshift-pipelines-operator
+data:
+  dashboard.yaml: |
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: tekton-dashboard
+      namespace: tekton-pipelines
+      labels:
+        app: tekton-dashboard-deployment
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: tekton-dashboard
+      template:
+        metadata:
+          name: tekton-dashboard
+          labels:
+            app: tekton-dashboard
+        spec:
+          containers:
+          - name: tekton-dashboard
+            image: gcr.io/tekton-nightly/dashboard:latest
+            ports:
+            - containerPort: 9097
+            livenessProbe:
+              httpGet:
+                path: /health
+                port: 9097
+            readinessProbe:
+              httpGet:
+                path: /readiness
+                port: 9097
+            resources:
+            env:
+            - name: PORT
+              value: "9097"
+            - name: WEB_RESOURCES_DIR
+              value: /var/run/ko/web
+            - name: PIPELINE_RUN_SERVICE_ACCOUNT
+              value: ""
+            - name: INSTALLED_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          serviceAccountName: tekton-pipelines-controller
+    ---
+    # ------------------- Dashboard Service ------------------- #
+    kind: Service
+    apiVersion: v1
+    metadata:
+      name: tekton-dashboard
+      labels:
+        app: tekton-dashboard
+    spec:
+      ports:
+        - name: http
+          protocol: TCP
+          port: 9097
+          targetPort: 9097
+      selector:
+        app: tekton-dashboard
+    ---
+    # ------------------- ClusterRole overrides ------------------- #
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      name: tekton-pipelines-admin
+    rules:
+    - apiGroups:
+      - ""
+      resources:
+      - pods
+      - namespaces
+      - secrets
+      - events
+      - serviceaccounts
+      - configmaps
+      - persistentvolumeclaims
+      - services
+      verbs:
+      - get
+      - list
+      - create
+      - update
+      - delete
+      - patch
+      - watch
+    - apiGroups:
+      - apps
+      resources:
+      - deployments
+      verbs:
+      - get
+      - list
+      - create
+      - update
+      - delete
+      - patch
+      - watch
+    - apiGroups:
+      - apps
+      resources:
+      - deployments/finalizers
+      verbs:
+      - get
+      - list
+      - create
+      - update
+      - delete
+      - patch
+      - watch
+    - apiGroups:
+      - admissionregistration.k8s.io
+      resources:
+      - mutatingwebhookconfigurations
+      verbs:
+      - get
+      - list
+      - create
+      - update
+      - delete
+      - patch
+      - watch
+    - apiGroups:
+      - tekton.dev
+      resources:
+      - tasks
+      - clustertasks
+      - taskruns
+      - pipelines
+      - pipelineruns
+      - pipelineresources
+      verbs:
+      - get
+      - list
+      - create
+      - update
+      - delete
+      - patch
+      - watch
+    - apiGroups:
+      - tekton.dev
+      resources:
+      - taskruns/finalizers
+      - pipelineruns/finalizers
+      verbs:
+      - get
+      - list
+      - create
+      - update
+      - delete
+      - patch
+      - watch
+    - apiGroups:
+      - tekton.dev
+      resources:
+      - tasks/status
+      - clustertasks/status
+      - taskruns/status
+      - pipelines/status
+      - pipelineruns/status
+      - pipelineresources/status
+      verbs:
+      - get
+      - list
+      - create
+      - update
+      - delete
+      - patch
+      - watch
+    - apiGroups:
+      - policy
+      resourceNames:
+      - tekton-pipelines
+      resources:
+      - podsecuritypolicies
+      verbs:
+      - use

@@ -1,0 +1,12 @@
+          volumeMounts:
+          - name: webhook
+            mountPath: /deploy/resources/webhook/webhook.yaml
+            subPath: webhook.yaml
+      volumes:
+      - name: webhook
+        configMap:
+          name: webhook
+          items:
+          - key: webhook.yaml
+            path: webhook.yaml
+            mode: 0777

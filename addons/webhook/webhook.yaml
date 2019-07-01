@@ -15,7 +15,7 @@ data:
       template:
         spec:
           containers:
-          - image: "github.com/tektoncd/experimental/webhooks-extension/cmd/sink"
+          - image: "gcr.io/tekton-nightly/sink:latest"
             imagePullPolicy: Always
             ports:
             - containerPort: 8080
@@ -50,7 +50,7 @@ data:
         spec:
           containers:
             - name: webhooks-extension
-              image: "github.com/tektoncd/experimental/webhooks-extension/cmd/extension"
+              image: "gcr.io/tekton-nightly/extension:latest"
               imagePullPolicy: Always
               ports:
                 - containerPort: 8080
